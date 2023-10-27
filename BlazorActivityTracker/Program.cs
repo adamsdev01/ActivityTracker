@@ -1,11 +1,21 @@
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
+using BlazorActivityTracker.Data.Models;
+using BlazorActivityTracker.Data.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
+
+builder.Services.AddTransient<IActivityRepository, ActivityRepository>();
+
+builder.Configuration
+    .SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings.json");
+
+builder.Services.AddDbContext<ActivityTrackerContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 
 var app = builder.Build();
 
