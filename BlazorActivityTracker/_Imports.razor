@@ -14,3 +14,7 @@
 @using BlazorActivityTracker.Pages
 @using BlazorActivityTracker.Pages.ManageActivity
 @using BlazorActivityTracker.ViewModels
+@using BlazorActivityTracker.Helpers
+@inject IActivityRepository _activityRepos
+@inject IJSRuntime jsRuntime
+@inject ILogger<ManageActivityForm> logger

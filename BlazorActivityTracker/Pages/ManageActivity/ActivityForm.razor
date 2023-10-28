@@ -13,11 +13,8 @@
     </div>
     <div class="mb-3">
         <label>Description</label>
-        <textarea type="text" rows="5" maxlength="1000" @bind="@Activity.Description" @bind:event="oninput" class="form-control"> </textarea>
+        <textarea type="text" rows="5" maxlength="1000" @bind="@Activity.Description" class="form-control"> </textarea>
         <ValidationMessage class="text-danger" For="()=>Activity.Description" />
-    </div>
-    <div>
-        @Activity.Description.Length / 1000
     </div>
     <br />
     <div class="mb-3">

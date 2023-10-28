@@ -4,6 +4,21 @@
 <br />
 <div class="row p-3">
   <div class="col-md-5">
+        @if(formState==(int)FormStates.Pending)
+        {
+            <Spinner/>
+        }
+
+        @if (formState == (int)FormStates.Error && message.Length > 0)
+        {
+            <Alert Message="@message" CssClass="alert-danger"/>
+        }
+
+        @if (formState == (int)FormStates.Completed && message.Length > 0)
+        {
+            <Alert Message="@message" CssClass="alert-success"/>
+        }
+
       @* activity form *@
       <ActivityForm Activity="@activity" FormReset="HandleReset" ValidFormSubmit="HandleSubmit" /> 
   </div>
@@ -20,16 +35,9 @@
 
     public List<Activity>? activities = new List<Activity>();
 
-    [Inject]
-    ILogger<ManageActivityForm> logger { get; set; }
+    public string message = "";
 
-    [Inject]
-    private IActivityRepository activityRepos { get; set; }
-
-    [Inject]
-    private IJSRuntime jSRuntime { get; set; }
-
-    string message = "";
+    public int formState = (int)FormStates.None;
 
     // execute conditionally for loading data, otherwise this will load
     // every time the page refreshes
@@ -50,29 +58,100 @@
 
     async void HandleSubmit(Activity activity)
     {
+        try
+        {
+            formState = (int)FormStates.Pending;
+            bool isActivityDateExists = await _activityRepos.IsActivityDateExists(activity.ActivityDate, activity.Id);
 
+            if (isActivityDateExists == true)
+            {
+                formState = (int)FormStates.Error;
+                message = "This activity date already exists, please select a different date.";
+            }
+            else if(isActivityDateExists == false)
+            {
+                if (activity.Id == 0)
+                {
+                    _activityRepos.AddActivityAsync(activity);
+                    activities.Add(activity);
+                }
+                else if(activity.Id > 0)
+                {
+                    _activityRepos.UpdateActivityAsync(activity);
+                }
+
+                message = "Saved successfully!";
+                formState = (int)FormStates.Completed;
+                HandleReset();
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex.Message);
+            message = "Error has occured";
+            formState = (int)FormStates.Error;
+        }
+        StateHasChanged();
     }
 
     void HandleReset()
     {
-       
+        activity = new Activity
+        {
+            ActivityDate = DateTime.Now
+        };
+        StateHasChanged();
     }
 
     void HandleEdit(Activity submitedActivity)
     {
-        
+        activity = submitedActivity;
     }
 
     async Task HandleDelete(Activity activityToDelete)
     {
-
+        try
+        {
+            bool result = await jsRuntime.InvokeAsync<bool>("confirm", "Are you sure to delete?");
+            if (result)
+            {
+                formState = (int)FormStates.Pending;
+                message = "Record deleted successfully!";
+                await _activityRepos.DeleteActivityAsync(activityToDelete.Id);
+                activities.Remove(activityToDelete);
+                formState = (int)FormStates.Completed;
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex.Message);
+            message = "Record not deleted.";
+            formState = (int)FormStates.Error;
+        }
 
     }
 
     async Task LoadActivities(DateTime? startDate = null, DateTime? endDate = null)
     {
-
-        
+        try
+        {
+            formState = (int)FormStates.Pending;
+            if (startDate != null && endDate != null)
+            {
+                activities = (await _activityRepos.GetAllActivitiesAsync(startDate, endDate)).ToList();
+            }
+            else
+            {
+                activities = (await _activityRepos.GetAllActivitiesAsync()).ToList();
+            }
+            formState = (int)FormStates.Completed;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex.Message);
+            message = "An error has occured.";
+            formState = (int)FormStates.Error;
+        }      
     }
 
     async Task HandleSelectDate(FilterModel filters)

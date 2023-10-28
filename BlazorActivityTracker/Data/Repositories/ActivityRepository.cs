@@ -1,6 +1,6 @@
 ﻿using BlazorActivityTracker.Data.Models;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 
 namespace BlazorActivityTracker.Data.Repositories
 {
@@ -16,7 +16,7 @@ namespace BlazorActivityTracker.Data.Repositories
         public async Task<Activity> AddActivityAsync(Activity activity)
         {
             await _dbContext.Activities.AddAsync(activity);
-            await _dbContext.SaveChangesAsync();
+            _dbContext.SaveChanges();
             return activity;
         }
 
@@ -64,6 +64,24 @@ namespace BlazorActivityTracker.Data.Repositories
             existingActivity.Description = updatedActivity.Description;
 
             await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task<bool> IsActivityDateExists(DateTime activityDate, int Id)
+        {
+           
+            var activityId = await _dbContext.Activities
+            .FromSqlRaw("SELECT Id FROM Activity WHERE CONVERT(date, ActivityDate) = CONVERT(date, {0}) AND Id != {1}", activityDate, Id)
+            .Select(a => a.Id)
+            .FirstOrDefaultAsync();
+
+            if(activityId != 0)
+            {
+                return activityId > 0;
+            }
+            else 
+            {
+                return false;
+            }
         }
     }
 }
