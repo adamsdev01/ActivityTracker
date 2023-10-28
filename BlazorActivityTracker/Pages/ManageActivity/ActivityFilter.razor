@@ -1,0 +1,42 @@
+﻿<div class="py-1 row">
+    <div class="col-md-4">
+        <input type="date" class="form-control" @bind="startDate" />
+    </div>
+    <div class="col-md-4">
+        <input type="date" class="form-control" @bind="endDate" />
+    </div>
+    <div class="col-md-4">
+        <button type="button" class="btn btn-default" @onclick="SelectDate">🔎</button>
+        <button type="button" class="btn btn-info" @onclick="HandleLoadAll">All</button>
+    </div>
+</div>
+
+@code {
+
+    public DateTime? startDate;
+    public DateTime? endDate;
+
+    [Parameter]
+    public EventCallback<FilterModel> OnSelectDate { get; set; }
+
+    [Parameter]
+    public Action OnLoadAll { get; set; }
+
+    public async Task SelectDate()
+    {
+        var filter = new FilterModel
+        {
+            StartDate = startDate,
+            EndDate = endDate
+        };
+        await OnSelectDate.InvokeAsync(filter);
+    }
+
+    void HandleLoadAll()
+    {
+        OnLoadAll.Invoke();
+        startDate = null;
+        endDate = null;
+    }
+
+}

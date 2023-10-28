@@ -1,0 +1,53 @@
+﻿<EditForm Model="@Activity" OnValidSubmit="HandleSubmit">
+    <DataAnnotationsValidator />
+    <input type="hidden" @bind="Activity.Id">
+    <div class="mb-3">
+        <label>Activity Date</label>
+        <input type="date" @bind="Activity.ActivityDate" class="form-control" />
+        <ValidationMessage class="text-danger" For="()=>Activity.ActivityDate" />
+    </div>
+    <div class="mb-3">
+        <label>Total Hours</label>
+        <input type="number" @bind="Activity.TotalHours" class="form-control" />
+        <ValidationMessage class="text-danger" For="()=>Activity.TotalHours" />
+    </div>
+    <div class="mb-3">
+        <label>Description</label>
+        <textarea type="text" rows="5" maxlength="1000" @bind="@Activity.Description" @bind:event="oninput" class="form-control"> </textarea>
+        <ValidationMessage class="text-danger" For="()=>Activity.Description" />
+    </div>
+    <div>
+        @Activity.Description.Length / 1000
+    </div>
+    <br />
+    <div class="mb-3">
+        <button type="submit" class="btn btn-primary">
+            <i class="fa fa-arrow-circle-o-up"> Submit</i>
+        </button>
+        <button type="button" @onclick="()=>FormReset?.Invoke()" class="btn btn-success">
+            <i class="fa fa-refresh fa-spin"></i> Reset
+        </button>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter]
+    public EventCallback<Activity> ValidFormSubmit { get; set; }
+
+    [Parameter]
+    public Action? FormReset { get; set; }
+
+    [Parameter]
+    public Activity? Activity { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Activity.Description = string.Empty;
+    }
+
+    async void HandleSubmit()
+    {
+        await ValidFormSubmit.InvokeAsync(Activity);
+    }
+
+}

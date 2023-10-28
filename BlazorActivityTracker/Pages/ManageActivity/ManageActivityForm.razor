@@ -1,0 +1,95 @@
+﻿@page "/Activity"
+
+<h3 style="text-align:center">ACTIVITIES</h3>
+<br />
+<div class="row p-3">
+  <div class="col-md-5">
+      @* activity form *@
+      <ActivityForm Activity="@activity" FormReset="HandleReset" ValidFormSubmit="HandleSubmit" /> 
+  </div>
+  <div class="col-md-7">
+      @* acitity list, filters *@
+      <ActivityFilter OnSelectDate="HandleSelectDate" OnLoadAll="HandleLoadAll"/>
+      <ActivityList Activities="@activities" OnEdit="HandleEdit" OnDelete="HandleDelete"/>
+  </div>
+</div>
+
+@code{
+
+    public Activity activity = new();
+
+    public List<Activity>? activities = new List<Activity>();
+
+    [Inject]
+    ILogger<ManageActivityForm> logger { get; set; }
+
+    [Inject]
+    private IActivityRepository activityRepos { get; set; }
+
+    [Inject]
+    private IJSRuntime jSRuntime { get; set; }
+
+    string message = "";
+
+    // execute conditionally for loading data, otherwise this will load
+    // every time the page refreshes
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Do work to load page data and set properties
+            activity.ActivityDate = DateTime.Now;
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        activity.ActivityDate = DateTime.Now;
+        await LoadActivities();
+    }
+
+    async void HandleSubmit(Activity activity)
+    {
+
+    }
+
+    void HandleReset()
+    {
+       
+    }
+
+    void HandleEdit(Activity submitedActivity)
+    {
+        
+    }
+
+    async Task HandleDelete(Activity activityToDelete)
+    {
+
+
+    }
+
+    async Task LoadActivities(DateTime? startDate = null, DateTime? endDate = null)
+    {
+
+        
+    }
+
+    async Task HandleSelectDate(FilterModel filters)
+    {
+        var startDate = filters.StartDate;
+        var endDate = filters.EndDate;
+
+        if (startDate != null & endDate != null)
+        {
+            await LoadActivities(filters.StartDate, filters.EndDate);
+        }
+    }
+
+    async void HandleLoadAll()
+    {
+        await LoadActivities();
+        StateHasChanged();
+    }
+
+}
